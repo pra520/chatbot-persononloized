@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PersonaBot — AI-powered document chatbot for businesses. Upload PDFs and CSVs and get instant AI answers." />
+  <meta name="theme-color" content="#6C63FF" />
+  <title>PersonaBot — Intelligent Document AI</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══════════ LOADING SCREEN ══════════ -->
+<div id="loading-screen" class="loading-screen">
+  <div class="loading-logo">
+    <div class="logo-pulse">
+      <span class="logo-icon">🤖</span>
+    </div>
+    <h1 class="loading-title">PersonaBot</h1>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+  </div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="app" class="app hidden">
+
+  <!-- ── SIDEBAR ─────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="ph ph-robot"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name" id="bot-name">PersonaBot</span>
+          <span class="brand-tag" id="bot-tagline">Intelligent Document AI</span>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+        <i class="ph ph-x"></i>
+      </button>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="sidebar-section">
+      <h3 class="section-label">
+        <i class="ph ph-upload-simple"></i>
+        Knowledge Base
+      </h3>
+
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept=".pdf,.csv,.txt,.xlsx" multiple hidden />
+        <div class="upload-content">
+          <div class="upload-icon">
+            <i class="ph ph-cloud-arrow-up"></i>
+          </div>
+          <p class="upload-text">Drop files here</p>
+          <p class="upload-sub">PDF, CSV, TXT, XLSX</p>
+          <button class="btn btn-upload" id="upload-btn">
+            <i class="ph ph-plus"></i>
+            Choose File
+          </button>
+        </div>
+      </div>
+
+      <!-- Upload Progress -->
+      <div class="upload-progress hidden" id="upload-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span class="progress-text" id="progress-text">Processing...</span>
+      </div>
+
+      <!-- Uploaded Documents -->
+      <div class="doc-list" id="doc-list"></div>
+    </div>
+
+    <!-- Settings Section -->
+    <div class="sidebar-section">
+      <h3 class="section-label">
+        <i class="ph ph-gear"></i>
+        Chatbot Config
+      </h3>
+
+      <div class="setting-group">
+        <label class="setting-label" for="bot-role-input">Bot Role</label>
+        <input
+          type="text"
+          id="bot-role-input"
+          class="setting-input"
+          placeholder="e.g., customer support agent"
+          value="professional business assistant"
+        />
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label" for="business-name-input">Business Name</label>
+        <input
+          type="text"
+          id="business-name-input"
+          class="setting-input"
+          placeholder="e.g., Acme Corp"
+          value="PersonaBot Inc."
+        />
+      </div>
+    </div>
+
+    <!-- Session Controls -->
+    <div class="sidebar-footer">
+      <button class="btn btn-danger" id="reset-btn">
+        <i class="ph ph-trash"></i>
+        Clear Session
+      </button>
+      <div class="session-badge">
+        <i class="ph ph-circle-wavy-check ph-fill"></i>
+        Session Active
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CHAT AREA ────────────────────── -->
+  <main class="chat-main" id="chat-main">
+
+    <!-- Top Bar -->
+    <header class="chat-header">
+      <button class="menu-btn" id="menu-btn" aria-label="Open menu">
+        <i class="ph ph-list"></i>
+      </button>
+
+      <div class="header-info">
+        <div class="header-avatar" id="header-avatar">🤖</div>
+        <div class="header-text">
+          <h1 class="header-title" id="header-bot-name">PersonaBot</h1>
+          <div class="status-dot-wrap">
+            <div class="status-dot"></div>
+            <span class="status-text">Online &amp; Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="clear-chat-btn" title="Clear chat">
+          <i class="ph ph-broom"></i>
+        </button>
+        <div class="context-chip" id="context-chip">
+          <i class="ph ph-database"></i>
+          <span id="context-count">0 docs</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Messages Container -->
+    <section class="messages-container" id="messages-container" aria-live="polite" aria-label="Chat messages">
+      <!-- Welcome State -->
+      <div class="welcome-state" id="welcome-state">
+        <div class="welcome-avatar">
+          <span id="welcome-avatar-icon">🤖</span>
+        </div>
+        <h2 class="welcome-title">Welcome to <span id="welcome-bot-name">PersonaBot</span></h2>
+        <p class="welcome-subtitle" id="welcome-message">Upload documents and ask me anything about them.</p>
+
+        <div class="quick-actions">
+          <button class="quick-action" data-msg="What documents have been uploaded?">
+            <i class="ph ph-files"></i>
+            View Knowledge Base
+          </button>
+          <button class="quick-action" data-msg="Summarize the uploaded document for me">
+            <i class="ph ph-text-align-left"></i>
+            Summarize Content
+          </button>
+          <button class="quick-action" data-msg="What are the key insights from the data?">
+            <i class="ph ph-chart-line-up"></i>
+            Key Insights
+          </button>
+          <button class="quick-action" data-msg="Help me understand how to use this chatbot">
+            <i class="ph ph-question"></i>
+            How to Use
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages will be inserted here -->
+    </section>
+
+    <!-- ── INPUT AREA ──────────────────────────── -->
+    <footer class="input-area">
+      <div class="input-container">
+        <div class="input-box">
+          <textarea
+            id="message-input"
+            class="message-textarea"
+            placeholder="Ask me anything about your documents..."
+            rows="1"
+            maxlength="2000"
+            aria-label="Type your message"
+          ></textarea>
+
+          <div class="input-actions">
+            <span class="char-count" id="char-count">0/2000</span>
+            <button class="send-btn" id="send-btn" aria-label="Send message" disabled>
+              <i class="ph ph-paper-plane-tilt ph-fill"></i>
+            </button>
+          </div>
+        </div>
+
+        <p class="input-disclaimer">
+          AI may make mistakes. Verify important information.
+        </p>
+      </div>
+    </footer>
+
+  </main>
+</div>
+
+<!-- ══════════ TOAST NOTIFICATIONS ══════════ -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
